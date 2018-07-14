@@ -1,5 +1,9 @@
 package arcane
 
+import (
+	"strings"
+)
+
 type Lexeme struct {
 	Type    Token
 	Literal string
@@ -41,8 +45,7 @@ func (l *Lexer) NextLexeme() Lexeme {
 
 	switch l.ch {
 	case '"':
-		lex.Literal = l.readString()
-		lex.Type = STR
+		return l.readString()
 	case 0:
 		lex.Literal = ""
 		lex.Type = EOF
@@ -66,13 +69,9 @@ func (l *Lexer) NextLexeme() Lexeme {
 		lex.Type = RBRACE
 	default:
 		if isDigit(l.ch) {
-			lex.Type = NUM
-			lex.Literal = l.readNumber()
-			return lex
-		} 
-		lex.Literal = l.readSym()
-		lex.Type = SYM
-		return lex
+			return l.readNumber()
+		}
+		return l.readSym()
 	}
 
 	l.readChar()
@@ -87,31 +86,40 @@ func (l *Lexer) peekChar() byte {
 	return l.input[l.readPosition]
 }
 
-func (l *Lexer) readSym() string {
+func (l *Lexer) readSym() Lexeme {
 	pos := l.position
+	l.readChar()
 	for isLetter(l.ch) {
 		l.readChar()
 	}
 
-	return l.input[pos:l.position]
-}
-
-func (l *Lexer) readNumber() string {
-	position := l.position
-	for isDigit(l.ch) {
-		l.readChar()
-	}
-	return l.input[position:l.position]
-}
-
-func (l *Lexer) skipWhitespace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-		l.readChar()
+	return Lexeme{
+		Type:    SYM,
+		Literal: l.input[pos:l.position],
 	}
 }
 
-func (l *Lexer) readString() string {
-	position := l.position + 1
+func (l *Lexer) readNumber() Lexeme {
+	pos := l.position
+	for isDigit(l.ch) || (l.ch == '.' && (isDigit(l.peekChar()) || isWhitespace(l.peekChar()))) {
+		l.readChar()
+	}
+	lit := l.input[pos:l.position]
+	var t Token
+	if strings.Contains(lit, ".") {
+		t = F64
+	} else {
+		t = I64
+	}
+
+	return Lexeme{
+		Type:    t,
+		Literal: lit,
+	}
+}
+
+func (l *Lexer) readString() Lexeme {
+	pos := l.position + 1 // skip current char which is "
 	for {
 		l.readChar()
 		if l.ch == '"' {
@@ -119,13 +127,16 @@ func (l *Lexer) readString() string {
 		}
 	}
 
-	return l.input[position:l.position]
+	l.readChar() // skip over the " we end on
+	return Lexeme{
+		Type:    STR,
+		Literal: l.input[pos : l.position-1],
+	}
 }
 
-func newLexeme(token Token, ch byte) Lexeme {
-	return Lexeme{
-		Type:    token,
-		Literal: string(ch),
+func (l *Lexer) skipWhitespace() {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		l.readChar()
 	}
 }
 

@@ -9,8 +9,10 @@ const (
 
 	litTokenStart
 	SYM // main
-	NUM // 12345
+	I64 // 12345
+	F64 // 1.3
 	STR // "abc"
+	KEY // :thing
 	litTokenEnd
 
 	sigilStart
@@ -23,6 +25,10 @@ const (
 	sigilEnd
 )
 
-func (tok Token) IsLiteral() bool { return litTokenStart < tok && tok < litTokenEnd }
+func (tok Token) IsLiteral() bool {
+	return litTokenStart < tok && tok < litTokenEnd
+}
 
-func (tok Token) IsSigil() bool { return sigilStart < tok && tok < sigilEnd }
+func (tok Token) IsSigil() bool {
+	return sigilStart < tok && tok < sigilEnd
+}

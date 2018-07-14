@@ -6,7 +6,10 @@ import (
 
 func TestNextToken(t *testing.T) {
 	input := `
-	(some (another other [thing 123123] {"stringtest" "another"}))
+	(some (another other [123
+                              12312.1] {
+           "stringtest" "another"
+         }))
 `
 	tests := []struct {
 		expectedType    Token
@@ -18,8 +21,8 @@ func TestNextToken(t *testing.T) {
 		{SYM, "another"},
 		{SYM, "other"},
 		{LBRACK, "["},
-		{SYM, "thing"},
-		{NUM, "123123"},
+		{I64, "123"},
+		{F64, "12312.1"},
 		{RBRACK, "]"},
 		{LBRACE, "{"},
 		{STR, "stringtest"},
