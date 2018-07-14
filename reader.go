@@ -4,6 +4,31 @@ import (
 	"strings"
 )
 
+type Token int
+
+const (
+	ILLIGAL Token = iota
+	EOF
+	COMMENT
+
+	litTokenStart
+	SYM   // main
+	INT   // 12345
+	FLOAT // 1.3
+	STR   // "abc"
+	KEY   // :thing
+	litTokenEnd
+
+	groupingStart
+	LPAREN
+	RPAREN
+	LBRACK
+	RBRACK
+	LBRACE
+	RBRACE
+	groupingEnd
+)
+
 type Lexeme struct {
 	Type    Token
 	Literal string
@@ -49,6 +74,13 @@ func (l *Lexer) NextLexeme() Lexeme {
 	case 0:
 		lex.Literal = ""
 		lex.Type = EOF
+	case ':':
+		if isWhitespace(l.peekChar()) {
+			lex.Literal = ":"
+			lex.Type = SYM
+		} else {
+			return l.readKey()
+		}
 	case '(':
 		lex.Literal = "("
 		lex.Type = LPAREN
@@ -89,12 +121,25 @@ func (l *Lexer) peekChar() byte {
 func (l *Lexer) readSym() Lexeme {
 	pos := l.position
 	l.readChar()
-	for isLetter(l.ch) {
+	for isAlpha(l.ch) {
 		l.readChar()
 	}
 
 	return Lexeme{
 		Type:    SYM,
+		Literal: l.input[pos:l.position],
+	}
+}
+
+func (l *Lexer) readKey() Lexeme {
+	pos := l.position + 1 // skip the :
+	l.readChar()
+	for isAlpha(l.ch) {
+		l.readChar()
+	}
+
+	return Lexeme{
+		Type:    KEY,
 		Literal: l.input[pos:l.position],
 	}
 }
@@ -107,9 +152,9 @@ func (l *Lexer) readNumber() Lexeme {
 	lit := l.input[pos:l.position]
 	var t Token
 	if strings.Contains(lit, ".") {
-		t = F64
+		t = FLOAT
 	} else {
-		t = I64
+		t = INT
 	}
 
 	return Lexeme{
@@ -150,4 +195,8 @@ func isDigit(ch byte) bool {
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
+}
+
+func isAlpha(ch byte) bool {
+	return isLetter(ch) || ch == '-'
 }

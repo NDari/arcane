@@ -7,3 +7,6 @@ type Str struct {
 func (s *Str) String() string {
 	return "Str: " + s.val
 }
+
+func (s *Str) arcaneType() {}
+func (s *Str) atomic()     {}
