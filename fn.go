@@ -2,8 +2,8 @@ package arcane
 
 type Fn struct {
 	name Sym
-	args Vec
-	call func(Vec) Vec
+	args *List
+	call func(*List) *List
 }
 
 func (f *Fn) arcaneType() {}

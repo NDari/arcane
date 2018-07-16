@@ -1,10 +1,10 @@
 package arcane
 
-type Unit struct{}
+type Empty struct{}
 
-func (u *Unit) String() string {
+func (e *Empty) String() string {
 	return "Unit"
 }
 
-func (u *Unit) arcaneType() {}
-func (u *Unit) atomic()     {}
+func (e *Empty) arcaneType() {}
+func (e *Empty) atomic()     {}

@@ -1,12 +1,10 @@
 package arcane
 
-type Str struct {
-	val string
-}
+type Str string
 
 func (s *Str) String() string {
-	return "Str: " + s.val
+	return "Str: " + string(*s)
 }
 
-func (s *Str) arcaneType() {}
-func (s *Str) atomic()     {}
+func (s Str) arcaneType() {}
+func (s Str) atomic()     {}
