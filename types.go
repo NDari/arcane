@@ -2,32 +2,51 @@ package arcane
 
 import "fmt"
 
-type Sym string
+type Unit struct{}
+
+func (u *Unit) ArcaneType() {}
+
+type Sym struct {
+	val string
+}
+
+type Bool struct {
+	val bool
+}
+
+func (b *Bool) ArcaneType() {}
 
 func (s *Sym) String() string {
-	return "Sym: " + string(*s)
+	return "Sym: " + string(s.val)
 }
 
-func (s *Sym) arcaneType() {}
-func (s *Sym) atomic()     {}
+func (s Sym) ArcaneType() {}
+
+func (s *Sym) Atomic() {}
 
 type Fn struct {
-	name Sym
-	call func(*List) Any
+	op func(*List, *Namespace) (Any, error)
 }
 
-func (f *Fn) arcaneType() {}
-func (f *Fn) atomic()     {}
+func (f Fn) ArcaneType() {}
+
+func (f *Fn) Atomic() {}
 
 type List struct {
-	head *Any
+	head Any
 	tail *List
 }
 
-func NewList(vals ...*Any) *List {
+func (l *List) ArcaneType() {}
+
+func NewList(vals ...Any) *List {
 	switch len(vals) {
 	case 0:
-		return nil
+		u := &Unit{}
+		return &List{
+			head: u,
+			tail: nil,
+		}
 	case 1:
 		return &List{
 			head: vals[0],
@@ -45,7 +64,7 @@ func NewList(vals ...*Any) *List {
 	}
 }
 
-func (l *List) Cons(a *Any) *List {
+func (l *List) Cons(a Any) *List {
 	if a == nil {
 		return l
 	}
@@ -55,7 +74,7 @@ func (l *List) Cons(a *Any) *List {
 	}
 }
 
-func (l *List) Car() *Any {
+func (l *List) Car() Any {
 	return l.head
 }
 
@@ -63,58 +82,66 @@ func (l *List) Cdr() *List {
 	return l.tail
 }
 
-type ConsCell struct {
-	left  *Any
-	right *Any
+type Cell struct {
+	left  Any
+	right Any
 }
 
-func NewCell(left, right *Any) *ConsCell {
-	return &ConsCell{
+func NewCell(left, right Any) *Cell {
+	return &Cell{
 		left,
 		right,
 	}
 }
 
-func (c *ConsCell) Car() *Any {
+func (c *Cell) Car() Any {
 	return c.left
 }
 
-func (c *ConsCell) Cdr() *Any {
+func (c *Cell) Cdr() Any {
 	return c.right
 }
 
-type Str string
+type Str struct {
+	val string
+}
 
 func (s *Str) String() string {
-	return "Str: " + string(*s)
+	return "Str: " + string(s.val)
 }
 
-func (s Str) arcaneType() {}
-func (s Str) atomic()     {}
+func (s *Str) ArcaneType() {}
+func (s *Str) Atomic()     {}
 
-type Key string
+type Key struct {
+	val string
+}
 
 func (k *Key) String() string {
-	return "Key: :" + string(*k)
+	return "Key: :" + string(k.val)
 }
 
-func (k *Key) arcaneType() {}
-func (k *Key) atomic()     {}
+func (k *Key) ArcaneType() {}
+func (k *Key) Atomic()     {}
 
-type I64 int64
+type I64 struct {
+	val int64
+}
 
 func (i *I64) String() string {
-	return fmt.Sprintf("I64: %d", i)
+	return fmt.Sprintf("I64: %d", int64(i.val))
 }
 
-func (i I64) arcaneType() {}
-func (i I64) atomic()     {}
+func (i *I64) ArcaneType() {}
+func (i *I64) Atomic()     {}
 
-type F64 float64
+type F64 struct {
+	val float64
+}
 
 func (f *F64) String() string {
-	return fmt.Sprintf("F64: %f", float64(*f))
+	return fmt.Sprintf("F64: %f", float64(f.val))
 }
 
-func (f F64) arcaneType() {}
-func (f F64) atomic()     {}
+func (f *F64) ArcaneType() {}
+func (f *F64) Atomic()     {}

@@ -6,7 +6,7 @@ import (
 
 func TestNextToken(t *testing.T) {
 	input := `
-	(some (another-name :other-key [123
+	(some? (another-name! :other-key [123
                               12312.1] {
            "stringtest" "another"
          }))
@@ -16,9 +16,9 @@ func TestNextToken(t *testing.T) {
 		expectedLiteral string
 	}{
 		{LPAREN, "("},
-		{SYM, "some"},
+		{SYM, "some?"},
 		{LPAREN, "("},
-		{SYM, "another-name"},
+		{SYM, "another-name!"},
 		{KEY, "other-key"},
 		{LBRACK, "["},
 		{INT, "123"},

@@ -198,5 +198,5 @@ func isLetter(ch byte) bool {
 }
 
 func isAlpha(ch byte) bool {
-	return isLetter(ch) || ch == '-'
+	return isLetter(ch) || ch == '-' || ch == '?' || ch == '!'
 }
