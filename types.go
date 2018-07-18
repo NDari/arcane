@@ -17,9 +17,9 @@ func (s *Sym) String() string {
 func (s *Sym) Atomic() {}
 
 type Fn struct {
-	ns   Sym
-	name Sym
-	call func(*List, *Namespace) (Any, error)
+	ns   *Sym
+	name *Sym
+	call func(*Vec, *Namespace) (*Any, error)
 }
 
 func (f *Fn) String() string {
@@ -30,16 +30,17 @@ func (f *Fn) String() string {
 func (f *Fn) Atomic() {}
 
 type List struct {
-	head Any
+	head *Any
 	tail *List
 }
 
 type Vec struct {
-	vals []Any
+	vals []*Any
 }
 
 type HashMap struct {
-	vals map[Sym]Any
+	name *Sym
+	vals map[*Key]*Any
 }
 
 type Str struct {
@@ -67,7 +68,7 @@ type I64 struct {
 }
 
 func (i *I64) String() string {
-	return fmt.Sprintf("I64: %d", int64(i.val))
+	return fmt.Sprintf("I64: %d", i.val)
 }
 
 func (i *I64) Atomic() {}
@@ -77,7 +78,7 @@ type F64 struct {
 }
 
 func (f *F64) String() string {
-	return fmt.Sprintf("F64: %f", float64(f.val))
+	return fmt.Sprintf("F64: %f", f.val)
 }
 
 func (f *F64) Atomic() {}
