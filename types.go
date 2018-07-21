@@ -1,4 +1,4 @@
-package arcane
+package main
 
 import "fmt"
 
@@ -19,7 +19,7 @@ func (s *Sym) Atomic() {}
 type Fn struct {
 	ns   *Sym
 	name *Sym
-	call func(*Vec, *Namespace) (*Any, error)
+	call func(*Namespace, ...*Any) (*Any, error)
 }
 
 func (f *Fn) String() string {

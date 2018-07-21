@@ -1,4 +1,4 @@
-package arcane
+package main
 
 type Atom interface {
 	Atomic()

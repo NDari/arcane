@@ -1,6 +1,7 @@
-package arcane
+package main
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -9,7 +10,6 @@ type Token int
 const (
 	ILLIGAL Token = iota
 	EOF
-	COMMENT
 
 	litTokenStart
 	SYM   // main
@@ -29,9 +29,29 @@ const (
 	groupingEnd
 )
 
+var tokenNames = [...]string{
+	EOF:    "EOF",
+	SYM:    "SYM",
+	INT:    "INT",   // 12345
+	FLOAT:  "FLOAT", // 1.3
+	STR:    "STR",   // "abc"
+	KEY:    "KEY",   // :thing
+	LPAREN: "LPAREN",
+	RPAREN: "RPAREN",
+	LBRACK: "LBRACK",
+	RBRACK: "RBRACK",
+	LBRACE: "LBRACE",
+	RBRACE: "RBRACE",
+}
+
 type Lexeme struct {
 	Type    Token
 	Literal string
+}
+
+func (l *Lexeme) String() string {
+	tname := tokenNames[l.Type]
+	return fmt.Sprintf("%s:\t\t%s", tname, l.Literal)
 }
 
 type Lexer struct {
@@ -63,8 +83,8 @@ func (l *Lexer) readChar() {
 	l.readPosition++
 }
 
-func (l *Lexer) NextLexeme() Lexeme {
-	var lex Lexeme
+func (l *Lexer) NextLexeme() *Lexeme {
+	lex := &Lexeme{}
 
 	l.skipWhitespace()
 
@@ -118,33 +138,33 @@ func (l *Lexer) peekChar() byte {
 	return l.input[l.readPosition]
 }
 
-func (l *Lexer) readSym() Lexeme {
+func (l *Lexer) readSym() *Lexeme {
 	pos := l.position
 	l.readChar()
 	for isAlpha(l.ch) {
 		l.readChar()
 	}
 
-	return Lexeme{
+	return &Lexeme{
 		Type:    SYM,
 		Literal: l.input[pos:l.position],
 	}
 }
 
-func (l *Lexer) readKey() Lexeme {
+func (l *Lexer) readKey() *Lexeme {
 	pos := l.position + 1 // skip the :
 	l.readChar()
 	for isAlpha(l.ch) {
 		l.readChar()
 	}
 
-	return Lexeme{
+	return &Lexeme{
 		Type:    KEY,
 		Literal: l.input[pos:l.position],
 	}
 }
 
-func (l *Lexer) readNumber() Lexeme {
+func (l *Lexer) readNumber() *Lexeme {
 	pos := l.position
 	for isDigit(l.ch) || (l.ch == '.' && (isDigit(l.peekChar()) || isWhitespace(l.peekChar()))) {
 		l.readChar()
@@ -157,13 +177,13 @@ func (l *Lexer) readNumber() Lexeme {
 		t = INT
 	}
 
-	return Lexeme{
+	return &Lexeme{
 		Type:    t,
 		Literal: lit,
 	}
 }
 
-func (l *Lexer) readString() Lexeme {
+func (l *Lexer) readString() *Lexeme {
 	pos := l.position + 1 // skip current char which is "
 	for {
 		l.readChar()
@@ -173,7 +193,7 @@ func (l *Lexer) readString() Lexeme {
 	}
 
 	l.readChar() // skip over the " we end on
-	return Lexeme{
+	return &Lexeme{
 		Type:    STR,
 		Literal: l.input[pos : l.position-1],
 	}

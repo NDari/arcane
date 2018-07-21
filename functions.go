@@ -1,4 +1,4 @@
-package arcane
+package main
 
 import "fmt"
 
@@ -22,7 +22,6 @@ func Eval(ns *Namespace, args ...*Any) (*Any, error) {
 		panic("list eval NYI")
 	default:
 		panic("strange case in eval")
-
 	}
 }
 
@@ -33,11 +32,11 @@ func Cons(ns *Namespace, args ...*Any) (*Any, error) {
 
 	lst, ok := (*args[1]).(*List)
 	if !ok {
-		return nil, fmt.Errorf("second argument to cons must be a list, but got %T", args.vals[1])
+		return nil, fmt.Errorf("second argument to cons must be a list, but got %T", args[1])
 	}
-	lst = &List{
-		args.vals[0],
+	var l Any = &List{
+		args[0],
 		lst,
 	}
-	return lst, nil
+	return &l, nil
 }

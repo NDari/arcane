@@ -1,76 +1,91 @@
-package arcane
+package main
+
+import "fmt"
 
 type Namespace struct {
 	upper *Namespace
-
-	vals map[*Sym]*Any
+	name  *Sym
+	vals  map[*Sym]*Any
 }
 
-func NewNS(upper *Namespace) *Namespace {
+func NewNS(name *Sym, upper *Namespace) *Namespace {
 	m := make(map[*Sym]*Any)
 	return &Namespace{
 		upper,
+		name,
 		m,
 	}
 }
 
-// func TopLevel() *Namespace {
-// 	m := make(map[Sym]Any)
-// 	topNameSpace := Sym{
-// 		"arcane",
-// 	}
+func TopLevel() *Namespace {
+	m := make(map[*Sym]*Any)
+	topNameSpace := &Sym{
+		"arcane",
+	}
+	ns := &Namespace{
+		nil,
+		topNameSpace,
+		m,
+	}
 
-// 	eval := Sym{
-// 		"eval",
-// 	}
+	eval := &Sym{
+		"eval",
+	}
 
-// 	atomHuh := Sym{
-// 		"atom?",
-// 	}
+	var evalFn Any = &Fn{
+		ns:   topNameSpace,
+		name: eval,
+		call: func(ns *Namespace, args ...*Any) (*Any, error) {
+			if len(args) == 0 {
+				return nil, fmt.Errorf("invalid argument vector sent to eval: %v\n", args)
+			}
 
-// isAtom := Fn{
-// 	func(args *List, ns *Namespace) (Any, error) {
-// 		h := args.Car()
-// 		if h == nil {
-// 			return nil, nil
-// 		}
-// 		if _, ok := h.(Atom); ok {
-// 			return 1, nil
-// 		}
-// 		return nil, nil
-// 	},
-// }
+			switch head := (*args[0]).(type) {
+			case *Sym:
+				v, found := ns.vals[head]
+				if !found {
+					return nil, fmt.Errorf("the symbol %s is not defined\n", head.val)
+				}
+				return v, nil
+			case *Key:
+				panic("key lookup in eval NYI")
+			case *Str, *F64, *I64, *Vec, *HashMap:
+				return &head, nil
+			case *List:
+				panic("list eval NYI")
+			default:
+				panic("strange case in eval")
+			}
+		},
+	}
 
-// m[atomHuh] = isAtom
+	ns.vals[eval] = &evalFn
 
-// lambda := Sym{
-// 	"fn",
-// }
+	cons := &Sym{
+		"cons",
+	}
 
-// fun := Fn{
-// 	func
-// }
+	var consFn Any = &Fn{
+		ns:   topNameSpace,
+		name: cons,
+		call: func(ns *Namespace, args ...*Any) (*Any, error) {
+			if len(args) < 2 {
+				return nil, fmt.Errorf("cons needs 2 arguments, but got %d", len(args))
+			}
 
-// def := Sym{
-// 	"def",
-// }
+			lst, ok := (*args[1]).(*List)
+			if !ok {
+				return nil, fmt.Errorf("second argument to cons must be a list, but got %T", args[1])
+			}
+			var l Any = &List{
+				args[0],
+				lst,
+			}
+			return &l, nil
+		},
+	}
 
-// define := Fn{
-// 	func(args *List, ns *Namespace) (Any, error) {
-// 		// h, t := args.Car(), args.Cdr()
-// 		// if lst, ok := h.(*List); ok {
-// 		// switch v := lst.Car() {
+	ns.vals[cons] = &consFn
 
-// 		// }
-// 		// }
-// 		return nil, nil
-// 	},
-// }
-
-// m[def] = define
-
-// return &Namespace{
-// 	nil,
-// 	m,
-// }
-// }
+	return ns
+}

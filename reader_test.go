@@ -1,4 +1,4 @@
-package arcane
+package main
 
 import (
 	"testing"
