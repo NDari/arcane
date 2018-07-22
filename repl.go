@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	l := NewLexer()
 	rd := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("incantation ::= ")
@@ -17,9 +16,13 @@ func main() {
 			fmt.Println("Goodbye!")
 			break
 		}
-		l.SetInput(str)
-		for lex := l.NextLexeme(); lex.Type != EOF; lex = l.NextLexeme() {
-			fmt.Println(lex)
+		anys, err := Read(str)
+		if err != nil {
+			fmt.Println("reader failed:", err)
+			continue
+		}
+		for _, a := range anys {
+			fmt.Println(*a)
 		}
 	}
 }

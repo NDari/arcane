@@ -17,6 +17,7 @@ const (
 	FLOAT // 1.3
 	STR   // "abc"
 	KEY   // :thing
+	FN    // #{  }
 	litTokenEnd
 
 	groupingStart
@@ -95,11 +96,11 @@ func (l *Lexer) NextLexeme() *Lexeme {
 		lex.Literal = ""
 		lex.Type = EOF
 	case ':':
-		if isWhitespace(l.peekChar()) {
+		if isLetter(l.peekChar()) {
+			return l.readKey()
+		} else {
 			lex.Literal = ":"
 			lex.Type = SYM
-		} else {
-			return l.readKey()
 		}
 	case '(':
 		lex.Literal = "("
@@ -152,8 +153,8 @@ func (l *Lexer) readSym() *Lexeme {
 }
 
 func (l *Lexer) readKey() *Lexeme {
-	pos := l.position + 1 // skip the :
-	l.readChar()
+	l.readChar() // skip the :
+	pos := l.position
 	for isAlpha(l.ch) {
 		l.readChar()
 	}
