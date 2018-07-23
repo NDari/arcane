@@ -2,10 +2,6 @@ package main
 
 import "fmt"
 
-// type Unit struct{}
-
-// func (u *Unit) ArcaneType() {}
-
 type Sym struct {
 	val string
 }
