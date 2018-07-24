@@ -59,7 +59,7 @@ func Read(s string) ([]*Any, error) {
 			}
 			forms = append(forms, s)
 		default:
-			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+			return nil, fmt.Errorf("could not read \"%s\" of type %s", form.Literal, tokenNames[form.Type])
 		}
 	}
 	return forms, nil
@@ -86,6 +86,8 @@ func ReadAtomLiteral(form *Lexeme) (*Any, error) {
 			return nil, fmt.Errorf("failed to parse F64 from %s:\n%v", form.Literal, err)
 		}
 		s = &F64{v}
+	case EOF:
+		return nil, fmt.Errorf("undexpected EOF")
 	}
 	return &s, nil
 }
@@ -131,7 +133,7 @@ func ReadListLiteral(l *Lexer) (*Any, error) {
 				lst.(*List),
 			}
 		default:
-			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+			return nil, fmt.Errorf("could not read \"%s\" of type %s", form.Literal, tokenNames[form.Type])
 		}
 	}
 	return &lst, nil
@@ -168,14 +170,62 @@ func ReadVecLiteral(l *Lexer) (*Any, error) {
 			}
 			v.(*Vec).vals = append(v.(*Vec).vals, s)
 		default:
-			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+			return nil, fmt.Errorf("could not read \"%s\" of type %s", form.Literal, tokenNames[form.Type])
 		}
 	}
 	return &v, nil
 }
 
 func ReadHashLiteral(l *Lexer) (*Any, error) {
-	return nil, nil
+	var h Any = &HashMap{
+		make(map[*Key]*Any),
+	}
+	for form := l.NextLexeme(); form.Type != RBRACE; form = l.NextLexeme() {
+		if form.Type != KEY {
+			return nil, fmt.Errorf("expected a key, but got %s of type %s", form.Literal, tokenNames[form.Type])
+		}
+		v, err := ReadVal(l)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read key/val pair:\n%v", err)
+		}
+		h.(*HashMap).vals[&Key{form.Literal}] = v
+	}
+
+	return &h, nil
+}
+
+func ReadVal(l *Lexer) (*Any, error) {
+	for form := l.NextLexeme(); form.Type != RBRACE; form = l.NextLexeme() {
+		switch form.Type {
+		case SYM, STR, KEY, INT, FLOAT:
+			s, err := ReadAtomLiteral(form)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read atom:\n%v", err)
+			}
+			return s, nil
+		case LPAREN:
+			s, err := ReadListLiteral(l)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read list:\n%v", err)
+			}
+			return s, nil
+		case LBRACE:
+			s, err := ReadHashLiteral(l)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read hashmap:\n%v", err)
+			}
+			return s, nil
+		case LBRACK:
+			s, err := ReadVecLiteral(l)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read vector:\n%v", err)
+			}
+			return s, nil
+		default:
+			return nil, fmt.Errorf("could not read \"%s\" of type %s", form.Literal, tokenNames[form.Type])
+		}
+	}
+	return nil, fmt.Errorf("undexpected EOF when reading value associated with key")
 }
 
 func Cons(ns *Namespace, args ...*Any) (*Any, error) {

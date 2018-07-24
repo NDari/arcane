@@ -18,7 +18,7 @@ func main() {
 		}
 		anys, err := Read(str)
 		if err != nil {
-			fmt.Println("reader failed:", err)
+			fmt.Println(fmt.Sprintf("reader failed:\n%v", err))
 			continue
 		}
 		for _, a := range anys {
