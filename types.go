@@ -7,7 +7,7 @@ type Sym struct {
 }
 
 func (s *Sym) String() string {
-	return fmt.Sprintf("Sym: %s", s.val)
+	return fmt.Sprintf("%s : Sym", s.val)
 }
 
 func (s *Sym) Atomic() {}
@@ -15,11 +15,11 @@ func (s *Sym) Atomic() {}
 type Fn struct {
 	ns   *Sym
 	name *Sym
-	call func(*Namespace, ...*Any) (*Any, error)
+	call func(*Namespace, *Any) (*Any, error)
 }
 
 func (f *Fn) String() string {
-	return fmt.Sprintf("#%s/%s", f.ns.String(), f.name.String())
+	return fmt.Sprintf("#(%s/%s)", f.ns.val, f.name.val)
 }
 
 func (f *Fn) Atomic() {}
@@ -31,7 +31,7 @@ type List struct {
 
 func (l *List) String() string {
 	if l.head == nil {
-		return "() : Empty"
+		return "()"
 	}
 	s := fmt.Sprintf("(%s", *l.head)
 	for t := l.tail; t != nil; t = t.tail {
@@ -50,7 +50,7 @@ type Vec struct {
 
 func (v *Vec) String() string {
 	if v == nil || len(v.vals) == 0 {
-		return "[] : Empty"
+		return "[]"
 	}
 	s := fmt.Sprintf("[%s", *v.vals[0])
 	for i := 1; i < len(v.vals); i++ {
@@ -66,7 +66,7 @@ type HashMap struct {
 
 func (h *HashMap) String() string {
 	if h == nil || len(h.vals) == 0 {
-		return "{} : Empty"
+		return "{}"
 	}
 	s := "{"
 	for k, v := range h.vals {

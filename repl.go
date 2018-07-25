@@ -8,21 +8,28 @@ import (
 )
 
 func main() {
+	ns := TopLevel()
 	rd := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("incantation ::= ")
-		str, _ := rd.ReadString('\n')
-		if strings.TrimSpace(str) == ":q" {
+		input, _ := rd.ReadString('\n')
+		if strings.TrimSpace(input) == ":q" {
 			fmt.Println("Goodbye!")
 			break
 		}
-		anys, err := Read(str)
+		s := Str{input}
+		anys, err := Read(s)
 		if err != nil {
 			fmt.Println(fmt.Sprintf("reader failed:\n%v", err))
 			continue
 		}
 		for _, a := range anys {
-			fmt.Println(*a)
+			v, err := Eval(ns, a)
+			if err != nil {
+				fmt.Println(fmt.Sprintf("eval failed:\n%v", err))
+				continue
+			}
+			fmt.Println(*v)
 		}
 	}
 }
