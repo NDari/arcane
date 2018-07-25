@@ -2,21 +2,15 @@ package main
 
 import "fmt"
 
-type Sym struct {
-	val string
-}
+type Sym string
 
 func (s *Sym) String() string {
 	return fmt.Sprintf("%s : Sym", s.val)
 }
 
-func (s *Sym) Atomic() {}
+type Err string
 
-type Fn struct {
-	ns   *Sym
-	name *Sym
-	call func(*Namespace, *Any) (*Any, error)
-}
+type Fn func(*Namespace, Any) (Any, Err)
 
 func (f *Fn) String() string {
 	return fmt.Sprintf("#(%s/%s)", f.ns.val, f.name.val)
