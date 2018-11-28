@@ -6,28 +6,34 @@ import (
 
 type testAtom struct{}
 
-func (tt testAtom) Atomic() {}
+func (tt testAtom) IsAtom() {}
 
 func TestIsAtom(t *testing.T) {
 	var tt testAtom
 
-	if !atomHuh(tt) {
+	if !AtomHuh(tt) {
 		t.Error("atomic type failed 'atomHuh'")
 	}
-	if atomHuh(10) {
+	if AtomHuh(10) {
 		t.Error("non-atomic type passed 'atomHuh'")
 	}
 }
 
 func TestAsAtom(t *testing.T) {
 	var tt testAtom
-	pr(tt)
-	_, err := asAtom(tt)
+	_, err := AsAtom(tt)
 	if err != nil {
 		t.Errorf("atomic type could not be converted to an atom: %v", err)
 	}
-	bad, err := asAtom("thing")
+	bad, err := AsAtom("thing")
 	if err == nil {
 		t.Errorf("non-atomic type %T converted to atom %v without error", "thing", bad)
+	}
+}
+
+func TestAtomicTypes(t *testing.T) {
+	tt := &Str{"test"}
+	if !AtomHuh(tt) {
+		t.Error("Str is not atomic")
 	}
 }

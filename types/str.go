@@ -14,11 +14,15 @@ func (s *Str) String() string {
 	return fmt.Sprintf("Str: %s", s.val)
 }
 
-func (s Str) Atomic() {}
+func (s Str) IsAtom() {}
 
 func strHuh(a Any) bool {
-	_, ok := a.(*Str)
-	return ok == true
+	switch a.(type) {
+	case *Str:
+		return true
+	default:
+		return false
+	}
 }
 
 func asStr(a Any) (*Str, error) {
