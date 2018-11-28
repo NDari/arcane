@@ -24,3 +24,27 @@ func AsPair(a Any) (Pair, error) {
 	}
 	return b, nil
 }
+
+func Head(a Any) Any {
+	if !PairHuh(a) {
+		return Nil
+	}
+	switch v := a.(type) {
+	case Cons:
+		return v.first
+	default:
+		return Nil
+	}
+}
+
+func Tail(a Any) Any {
+	if !PairHuh(a) {
+		return Nil
+	}
+	switch v := a.(type) {
+	case Cons:
+		return v.second
+	default:
+		return Nil
+	}
+}

@@ -10,11 +10,11 @@ type Str struct {
 	val string
 }
 
-func (s *Str) String() string {
-	return fmt.Sprintf("Str: %s", s.val)
-}
+func (self Str) IsAtom() {}
 
-func (s Str) IsAtom() {}
+func (self *Str) String() string {
+	return fmt.Sprintf("Str: %s", self.val)
+}
 
 func strHuh(a Any) bool {
 	switch a.(type) {
@@ -25,7 +25,7 @@ func strHuh(a Any) bool {
 	}
 }
 
-func asStr(a Any) (*Str, error) {
+func AsStr(a Any) (*Str, error) {
 	s, ok := a.(*Str)
 	if !ok {
 		return nil, errors.Errorf("could not cast %T to Str", a)
