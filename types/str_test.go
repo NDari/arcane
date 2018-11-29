@@ -14,11 +14,11 @@ func TestIsStr(t *testing.T) {
 
 func TestAsStr(t *testing.T) {
 	tt := &Str{"test"}
-	_, err := asStr(tt)
+	_, err := AsStr(tt)
 	if err != nil {
 		t.Error("Str type could not be converted to Str")
 	}
-	bad, err := asStr(12.0)
+	bad, err := AsStr(12.0)
 	if err == nil {
 		t.Errorf("non-str type %T converted to Str %v without error", 12.0, bad)
 	}
