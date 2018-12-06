@@ -12,12 +12,12 @@ const (
 	EOF
 
 	litTokenStart
-	SYM   // main
-	INT   // 12345
-	FLOAT // 1.3
-	STR   // "abc"
-	KEY   // :thing
-	FN    // #{  }
+	SYM // main
+	I64 // 12345
+	F64 // 1.3
+	STR // "abc"
+	KEY // :thing
+	FN  // #{  }
 	litTokenEnd
 
 	groupingStart
@@ -33,10 +33,10 @@ const (
 var tokenNames = [...]string{
 	EOF:    "EOF",
 	SYM:    "SYM",
-	INT:    "INT",   // 12345
-	FLOAT:  "FLOAT", // 1.3
-	STR:    "STR",   // "abc"
-	KEY:    "KEY",   // :thing
+	I64:    "I64", // 12345
+	F64:    "F64", // 1.3
+	STR:    "STR", // "abc"
+	KEY:    "KEY", // :thing
 	LPAREN: "LPAREN",
 	RPAREN: "RPAREN",
 	LBRACK: "LBRACK",
@@ -173,9 +173,9 @@ func (l *Lexer) readNumber() *Lexeme {
 	lit := l.input[pos:l.position]
 	var t Token
 	if strings.Contains(lit, ".") {
-		t = FLOAT
+		t = F64
 	} else {
-		t = INT
+		t = I64
 	}
 
 	return &Lexeme{
