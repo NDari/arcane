@@ -5,9 +5,9 @@ import (
 )
 
 type Str struct {
-	val string
+	Val string
 }
 
-func (self *Str) String() string {
-	return fmt.Sprintf("Str: %s", self.val)
+func (s Str) Repr() string {
+	return fmt.Sprintf("%s", s.Val)
 }

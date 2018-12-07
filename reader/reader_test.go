@@ -16,9 +16,9 @@ func TestNextToken(t *testing.T) {
 		expectedLiteral string
 	}{
 		{LPAREN, "("},
-		{SYM, "some?"},
+		{IDENT, "some?"},
 		{LPAREN, "("},
-		{SYM, "another-name!"},
+		{IDENT, "another-name!"},
 		{KEY, "other-key"},
 		{LBRACK, "["},
 		{I64, "123"},

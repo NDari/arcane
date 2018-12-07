@@ -5,9 +5,9 @@ import (
 )
 
 type I64 struct {
-	val int64
+	Val int64
 }
 
-func (i *I64) String() string {
-	return fmt.Sprintf("I64: %d", i.val)
+func (i I64) Repr() string {
+	return fmt.Sprintf("%d", i.Val)
 }

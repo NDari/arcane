@@ -21,8 +21,6 @@ func main() {
 			fmt.Println("reader failed:", err)
 			continue
 		}
-		for _, a := range anys {
-			fmt.Println(*a)
-		}
+		fmt.Println(anys.Repr())
 	}
 }

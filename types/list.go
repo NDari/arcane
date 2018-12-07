@@ -1,6 +1,9 @@
 package types
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 type List struct {
 	head Any
@@ -17,6 +20,15 @@ func empty() *List {
 	return _empty
 }
 
+func (l *List) Repr() string {
+	fmt.Printf("LIST IS: %+v\n", &l)
+	if l == empty() {
+		return "()"
+	}
+	s := fmt.Sprintf("(%s %s)", l.head.Repr(), l.tail.Repr())
+	return s
+}
+
 func NewList(args ...Any) *List {
 	switch len(args) {
 	case 0:
@@ -24,8 +36,8 @@ func NewList(args ...Any) *List {
 	case 1:
 		return &List{args[0], empty()}
 	default:
-		l := &List{args[len(args)-1], empty()}
-		for i := len(args) - 2; i >= 0; i-- {
+		l := &List{args[0], empty()}
+		for i := 1; i < len(args); i++ {
 			l = l.Cons(args[i])
 		}
 		return l

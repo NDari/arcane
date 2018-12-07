@@ -1,3 +1,5 @@
 package types
 
-type Any interface{}
+type Any interface {
+	Repr() string
+}

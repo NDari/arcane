@@ -12,12 +12,12 @@ const (
 	EOF
 
 	litTokenStart
-	SYM // main
-	I64 // 12345
-	F64 // 1.3
-	STR // "abc"
-	KEY // :thing
-	FN  // #{  }
+	IDENT // main
+	I64   // 12345
+	F64   // 1.3
+	STR   // "abc"
+	KEY   // :thing
+	FN    // #{  }
 	litTokenEnd
 
 	groupingStart
@@ -32,7 +32,6 @@ const (
 
 var tokenNames = [...]string{
 	EOF:    "EOF",
-	SYM:    "SYM",
 	I64:    "I64", // 12345
 	F64:    "F64", // 1.3
 	STR:    "STR", // "abc"
@@ -100,7 +99,7 @@ func (l *Lexer) NextLexeme() *Lexeme {
 			return l.readKey()
 		} else {
 			lex.Literal = ":"
-			lex.Type = SYM
+			lex.Type = IDENT
 		}
 	case '(':
 		lex.Literal = "("
@@ -124,7 +123,7 @@ func (l *Lexer) NextLexeme() *Lexeme {
 		if isDigit(l.ch) {
 			return l.readNumber()
 		}
-		return l.readSym()
+		return l.readIdent()
 	}
 
 	l.readChar()
@@ -139,7 +138,7 @@ func (l *Lexer) peekChar() byte {
 	return l.input[l.readPosition]
 }
 
-func (l *Lexer) readSym() *Lexeme {
+func (l *Lexer) readIdent() *Lexeme {
 	pos := l.position
 	l.readChar()
 	for isAlpha(l.ch) {
@@ -147,7 +146,7 @@ func (l *Lexer) readSym() *Lexeme {
 	}
 
 	return &Lexeme{
-		Type:    SYM,
+		Type:    IDENT,
 		Literal: l.input[pos:l.position],
 	}
 }
