@@ -7,6 +7,9 @@ import (
 )
 
 func TestNewList(t *testing.T) {
+	e := NewList()
+	assert.Equal(t, e, empty(), "new list should be empty")
+
 	a := Str{"Hello"}
 	b := Str{"goodbye"}
 	l := NewList(a, b)

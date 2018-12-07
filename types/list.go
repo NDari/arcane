@@ -7,25 +7,25 @@ type List struct {
 	tail *List
 }
 
-var _emptyList *List
+var _empty *List
 var once sync.Once
 
-func emptyList() *List {
+func empty() *List {
 	once.Do(func() {
-		_emptyList = &List{}
+		_empty = &List{}
 	})
-	return _emptyList
+	return _empty
 }
 
 func NewList(args ...Any) *List {
 	switch len(args) {
 	case 0:
-		return emptyList()
+		return empty()
 	case 1:
-		return &List{args[0], emptyList()}
+		return &List{args[0], empty()}
 	default:
-		l := &List{args[len(args)-1], emptyList()}
-		for i := len(args) - 1; i >= 0; i-- {
+		l := &List{args[len(args)-1], empty()}
+		for i := len(args) - 2; i >= 0; i-- {
 			l = l.Cons(args[i])
 		}
 		return l
@@ -33,7 +33,7 @@ func NewList(args ...Any) *List {
 }
 
 func (l *List) Cons(a Any) *List {
-	if a == emptyList() {
+	if a == empty() {
 		return l
 	}
 	return &List{a, l}
@@ -51,5 +51,5 @@ func (l *List) Tail() *List {
 }
 
 func (l *List) IsEmpty() bool {
-	return l == emptyList()
+	return l == empty()
 }
