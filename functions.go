@@ -27,7 +27,7 @@ import (
 // 	}
 // }
 
-func Read(s string) (*types.List, error) {
+func Read(s string) ([]types.Any, error) {
 	var forms []types.Any
 	l := reader.NewLexer()
 	l.SetInput(s)
@@ -49,7 +49,7 @@ func Read(s string) (*types.List, error) {
 			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
 		}
 	}
-	return types.NewList(forms...), nil
+	return forms, nil
 }
 
 func ReadAtomLiteral(form *reader.Lexeme) (types.Any, error) {
@@ -83,13 +83,13 @@ func ReadListLiteral(l *reader.Lexer) (*types.List, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to read atom:\n%v", err)
 			}
-			lst = lst.Cons(s)
+			lst.Append(s)
 		case reader.LPAREN, reader.LBRACE, reader.LBRACK:
 			s, err := ReadListLiteral(l)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read list:\n%v", err)
 			}
-			lst = lst.Cons(s)
+			lst.Append(s)
 		default:
 			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
 		}

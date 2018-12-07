@@ -14,16 +14,16 @@ func TestNewList(t *testing.T) {
 	b := Str{"goodbye"}
 	l := NewList(a, b)
 
-	assert.Equal(t, l.Head(), a, "wrong head")
-	assert.Equal(t, l.Tail(), NewList(b), "wrong tail")
+	assert.Equal(t, l.vals[0], a, "wrong head")
+	assert.Equal(t, l.vals[1], b, "wrong tail")
 }
 
-func TestCons(t *testing.T) {
+func TestAppend(t *testing.T) {
 	a := Str{"Hello"}
 	b := Str{"goodbye"}
-	l := NewList(a, b)
-	l2 := l.Cons(b)
+	l := NewList(a)
+	l.Append(b)
 
-	assert.Equal(t, l2.Head(), b, "wrong head")
-	assert.Equal(t, l2.Tail(), l, "wrong tail")
+	assert.Equal(t, l.vals[0], a, "wrong head")
+	assert.Equal(t, l.vals[1], b, "wrong tail")
 }
