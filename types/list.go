@@ -2,27 +2,14 @@ package types
 
 import (
 	"fmt"
-	"sync"
 )
 
 type List struct {
 	vals []Any
 }
 
-var _empty *List
-var once sync.Once
-
-func empty() *List {
-	once.Do(func() {
-		_empty = &List{
-			vals: make([]Any, 0),
-		}
-	})
-	return _empty
-}
-
 func (l *List) Repr() string {
-	if l.IsEmpty() {
+	if len(l.vals) == 0 {
 		return "[]"
 	}
 	s := fmt.Sprintf("[%s", l.vals[0].Repr())
@@ -36,14 +23,12 @@ func (l *List) Repr() string {
 func NewList(args ...Any) *List {
 	switch len(args) {
 	case 0:
-		return empty()
+		return &List{
+			make([]Any, 0),
+		}
 	default:
 		return &List{args}
 	}
-}
-
-func (l *List) IsEmpty() bool {
-	return len(l.vals) == 0
 }
 
 func (l *List) Append(a ...Any) {
@@ -54,23 +39,23 @@ func (l *List) Append(a ...Any) {
 	return
 }
 
-type IterableList struct {
+type iterableList struct {
 	*List
 
 	currentIndex I64
 }
 
-func (i *IterableList) HasNext() bool {
+func (i *iterableList) HasNext() bool {
 	return int(i.currentIndex.Val) >= len(i.vals)
 }
 
-func (i *IterableList) Next() Any {
+func (i *iterableList) Next() Any {
 	i.currentIndex.Val++
 	return i.vals[i.currentIndex.Val-1]
 }
 
 func (l *List) ToIterable() Iterator {
-	return &IterableList{
+	return &iterableList{
 		l,
 		I64{0},
 	}

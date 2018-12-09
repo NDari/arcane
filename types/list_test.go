@@ -26,4 +26,10 @@ func TestAppend(t *testing.T) {
 
 	assert.Equal(t, l.vals[0], a, "wrong head")
 	assert.Equal(t, l.vals[1], b, "wrong tail")
+
+	l2 := NewList(b)
+	l3 := NewList(l, l2)
+	assert.Equal(t, l3.vals[0], l, "wrong head")
+	assert.Equal(t, l3.vals[1], l2, "wrong tail")
+	t.Errorf("%v", l3.vals)
 }
