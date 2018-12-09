@@ -20,33 +20,47 @@ func NewReader(input string) *Reader {
 	}
 }
 
-func (l *Reader) Read() ([]types.Any, error) {
+func (l *Reader) ReadAll() ([]types.Any, error) {
 	var forms []types.Any
-	for form := l.NextLexeme(); form.Type != EOF; form = l.NextLexeme() {
-		switch form.Type {
-		case IDENT, STR, KEY, I64, F64:
-			s, err := l.ReadAtomLiteral(form)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read atom:\n%v", err)
-			}
-			forms = append(forms, s)
-		case LBRACK:
-			s, err := l.ReadListLiteral()
-			if err != nil {
-				return nil, fmt.Errorf("failed to read list:\n%v", err)
-			}
-			forms = append(forms, s)
-		case LBRACE:
-			s, err := l.ReadHashLiteral()
-			if err != nil {
-				return nil, fmt.Errorf("failed to read hash:\n%v", err)
-			}
-			forms = append(forms, s)
-		default:
-			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+	for {
+		form, err := l.ReadAny()
+		if err != nil {
+			return nil, fmt.Errorf("failed to ReadAll: %v", err)
 		}
+		if form == nil {
+			return forms, nil
+		}
+
+		forms = append(forms, form)
 	}
-	return forms, nil
+}
+
+func (l *Reader) ReadAny() (types.Any, error) {
+	form := l.NextLexeme()
+	switch form.Type {
+	case EOF:
+		return nil, nil
+	case IDENT, STR, KEY, I64, F64:
+		s, err := l.ReadAtomLiteral(form)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read atom:\n%v", err)
+		}
+		return s, nil
+	case LBRACK:
+		s, err := l.ReadListLiteral()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read list:\n%v", err)
+		}
+		return s, nil
+	case LBRACE:
+		s, err := l.ReadHashLiteral()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read hash:\n%v", err)
+		}
+		return s, nil
+	default:
+		return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+	}
 }
 
 func (l *Reader) ReadAtomLiteral(form *Lexeme) (types.Any, error) {
@@ -134,10 +148,9 @@ func (l *Reader) ReadKvPair() (*types.List, error) {
 		return nil, fmt.Errorf("could not convert %v to key", atm)
 	}
 
-	maybeVal := l.NextLexeme()
-	v, err := l.ReadAtomLiteral(maybeVal)
+	v, err := l.ReadAny()
 	if err != nil {
-		return nil, fmt.Errorf("could not parse value %s: %v", maybeVal.Literal, err)
+		return nil, fmt.Errorf("failed to read value associated with key %v: %v", k.Repr(), err)
 	}
 	lst := types.NewList(k, v)
 	return lst, nil

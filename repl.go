@@ -20,7 +20,7 @@ func main() {
 			break
 		}
 		r := reader.NewReader(str)
-		anys, err := r.Read()
+		anys, err := r.ReadAll()
 		if err != nil {
 			fmt.Println("reader failed:", err)
 			continue
