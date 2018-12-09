@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 type Map struct {
 	vals []*List
 }
@@ -8,6 +10,18 @@ func NewMap() *Map {
 	return &Map{
 		make([]*List, 0),
 	}
+}
+
+func (m *Map) Repr() string {
+	if len(m.vals) == 0 {
+		return "{}"
+	}
+	s := fmt.Sprintf("{%s %s", m.vals[0].vals[0].Repr(), m.vals[0].vals[1].Repr())
+	for i := 1; i < len(m.vals); i++ {
+		s += fmt.Sprintf(", %s %s", m.vals[i].vals[0].Repr(), m.vals[i].vals[1].Repr())
+	}
+	s += "}"
+	return s
 }
 
 func (m *Map) Get(k Key) Any {
@@ -19,16 +33,19 @@ func (m *Map) Get(k Key) Any {
 	return nil
 }
 
-func (m *Map) Set(k Key, v Any) {
+func (m *Map) Set(l *List) {
 	for i := range m.vals {
-		if m.vals[i].vals[0] == k {
-			m.vals[i].vals[1] = v
+		if m.vals[i].vals[0] == l.vals[0] {
+			m.vals[i].vals[1] = l.vals[1]
 			return
 		}
 	}
-	l := NewList(k, v)
 	m.vals = append(m.vals, l)
 	return
+}
+
+func (m *Map) IsEmpty() bool {
+	return len(m.vals) == 0
 }
 
 type iterableMap struct {

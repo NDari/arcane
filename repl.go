@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/NDari/arcane/reader"
 )
 
 func main() {
@@ -17,7 +19,8 @@ func main() {
 			fmt.Println("Goodbye!")
 			break
 		}
-		anys, err := Read(str)
+		r := reader.NewReader(str)
+		anys, err := r.Read()
 		if err != nil {
 			fmt.Println("reader failed:", err)
 			continue

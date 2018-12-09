@@ -2,221 +2,143 @@ package reader
 
 import (
 	"fmt"
-	"strings"
+	"strconv"
+
+	"github.com/NDari/arcane/types"
 )
 
-type Token int
-
-const (
-	ILLIGAL Token = iota
-	EOF
-
-	litTokenStart
-	IDENT // main
-	I64   // 12345
-	F64   // 1.3
-	STR   // "abc"
-	KEY   // :thing
-	FN    // #{  }
-	litTokenEnd
-
-	groupingStart
-	LPAREN
-	RPAREN
-	LBRACK
-	RBRACK
-	LBRACE
-	RBRACE
-	groupingEnd
-)
-
-var tokenNames = [...]string{
-	EOF:    "EOF",
-	I64:    "I64", // 12345
-	F64:    "F64", // 1.3
-	STR:    "STR", // "abc"
-	KEY:    "KEY", // :thing
-	LPAREN: "LPAREN",
-	RPAREN: "RPAREN",
-	LBRACK: "LBRACK",
-	RBRACK: "RBRACK",
-	LBRACE: "LBRACE",
-	RBRACE: "RBRACE",
+type Reader struct {
+	*Lexer
 }
 
-type Lexeme struct {
-	Type    Token
-	Literal string
-}
+func NewReader(input string) *Reader {
+	l := NewLexer()
+	l.SetInput(input)
 
-func (l *Lexeme) String() string {
-	tname := tokenNames[l.Type]
-	return fmt.Sprintf("%s:\t\t%s", tname, l.Literal)
-}
-
-type Lexer struct {
-	input        string
-	position     int  // current position in input (points to current char)
-	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char under examination
-}
-
-func NewLexer() *Lexer {
-	l := &Lexer{}
-	return l
-}
-
-func (l *Lexer) SetInput(input string) {
-	l.input = input
-	l.readPosition = 0
-	l.readChar()
-}
-
-func (l *Lexer) readChar() {
-	if l.readPosition >= len(l.input) {
-		l.ch = 0
-	} else {
-		l.ch = l.input[l.readPosition]
+	return &Reader{
+		l,
 	}
-
-	l.position = l.readPosition
-	l.readPosition++
 }
 
-func (l *Lexer) NextLexeme() *Lexeme {
-	lex := &Lexeme{}
-
-	l.skipWhitespace()
-
-	switch l.ch {
-	case '"':
-		return l.readString()
-	case 0:
-		lex.Literal = ""
-		lex.Type = EOF
-	case ':':
-		if isLetter(l.peekChar()) {
-			return l.readKey()
-		} else {
-			lex.Literal = ":"
-			lex.Type = IDENT
+func (l *Reader) Read() ([]types.Any, error) {
+	var forms []types.Any
+	for form := l.NextLexeme(); form.Type != EOF; form = l.NextLexeme() {
+		switch form.Type {
+		case IDENT, STR, KEY, I64, F64:
+			s, err := l.ReadAtomLiteral(form)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read atom:\n%v", err)
+			}
+			forms = append(forms, s)
+		case LBRACK:
+			s, err := l.ReadListLiteral()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read list:\n%v", err)
+			}
+			forms = append(forms, s)
+		case LBRACE:
+			s, err := l.ReadHashLiteral()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read hash:\n%v", err)
+			}
+			forms = append(forms, s)
+		default:
+			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
 		}
-	case '(':
-		lex.Literal = "("
-		lex.Type = LPAREN
-	case ')':
-		lex.Literal = ")"
-		lex.Type = RPAREN
-	case '[':
-		lex.Literal = "["
-		lex.Type = LBRACK
-	case ']':
-		lex.Literal = "]"
-		lex.Type = RBRACK
-	case '{':
-		lex.Literal = "{"
-		lex.Type = LBRACE
-	case '}':
-		lex.Literal = "}"
-		lex.Type = RBRACE
-	default:
-		if isDigit(l.ch) {
-			return l.readNumber()
+	}
+	return forms, nil
+}
+
+func (l *Reader) ReadAtomLiteral(form *Lexeme) (types.Any, error) {
+	switch form.Type {
+	case IDENT, KEY:
+		return types.Key{Val: form.Literal}, nil
+	case STR:
+		return types.Str{Val: form.Literal}, nil
+	case I64:
+		v, err := strconv.Atoi(form.Literal)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse I64 from %s:\n%v", form.Literal, err)
 		}
-		return l.readIdent()
+		return types.I64{Val: int64(v)}, nil
+	case F64:
+		v, err := strconv.ParseFloat(form.Literal, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse F64 from %s:\n%v", form.Literal, err)
+		}
+		return types.F64{Val: v}, nil
 	}
-
-	l.readChar()
-	return lex
+	return nil, fmt.Errorf("unknown atom: %s", form.Literal)
 }
 
-func (l *Lexer) peekChar() byte {
-	if l.readPosition >= len(l.input) {
-		return 0
+func (l *Reader) ReadListLiteral() (*types.List, error) {
+	lst := types.NewList()
+	for form := l.NextLexeme(); form.Type != RBRACK; form = l.NextLexeme() {
+		switch form.Type {
+		case IDENT, STR, KEY, I64, F64:
+			s, err := l.ReadAtomLiteral(form)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read atom:\n%v", err)
+			}
+			lst.Append(s)
+		case LBRACK:
+			s, err := l.ReadListLiteral()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read list:\n%v", err)
+			}
+			lst.Append(s)
+		case LBRACE:
+			s, err := l.ReadHashLiteral()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read hash:\n%v", err)
+			}
+			lst.Append(s)
+		default:
+			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+		}
 	}
-
-	return l.input[l.readPosition]
+	return lst, nil
 }
 
-func (l *Lexer) readIdent() *Lexeme {
-	pos := l.position
-	l.readChar()
-	for isAlpha(l.ch) {
-		l.readChar()
-	}
-
-	return &Lexeme{
-		Type:    IDENT,
-		Literal: l.input[pos:l.position],
-	}
-}
-
-func (l *Lexer) readKey() *Lexeme {
-	l.readChar() // skip the :
-	pos := l.position
-	for isAlpha(l.ch) {
-		l.readChar()
-	}
-
-	return &Lexeme{
-		Type:    KEY,
-		Literal: l.input[pos:l.position],
-	}
-}
-
-func (l *Lexer) readNumber() *Lexeme {
-	pos := l.position
-	for isDigit(l.ch) || (l.ch == '.' && (isDigit(l.peekChar()) || isWhitespace(l.peekChar()))) {
-		l.readChar()
-	}
-	lit := l.input[pos:l.position]
-	var t Token
-	if strings.Contains(lit, ".") {
-		t = F64
-	} else {
-		t = I64
-	}
-
-	return &Lexeme{
-		Type:    t,
-		Literal: lit,
-	}
-}
-
-func (l *Lexer) readString() *Lexeme {
-	pos := l.position + 1 // skip current char which is "
+func (l *Reader) ReadHashLiteral() (*types.Map, error) {
+	m := types.NewMap()
 	for {
-		l.readChar()
-		if l.ch == '"' {
+		pair, err := l.ReadKvPair()
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse hash literal: %v", err)
+		}
+		if pair.IsEmpty() {
 			break
 		}
+
+		m.Set(pair)
+	}
+	return m, nil
+}
+
+func (l *Reader) ReadKvPair() (*types.List, error) {
+	maybeKey := l.NextLexeme()
+	if maybeKey.Type == RBRACE {
+		return types.NewList(), nil
+	}
+	if maybeKey.Type != KEY {
+		return nil, fmt.Errorf("When parsing hash literal, expected Key, found %s: %s", maybeKey.String(), maybeKey.Literal)
+	}
+	atm, err := l.ReadAtomLiteral(maybeKey)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse key %s: %v", maybeKey.Literal, err)
 	}
 
-	l.readChar() // skip over the " we end on
-	return &Lexeme{
-		Type:    STR,
-		Literal: l.input[pos : l.position-1],
+	k, ok := atm.(types.Key)
+	if !ok {
+		return nil, fmt.Errorf("could not convert %v to key", atm)
 	}
-}
 
-func (l *Lexer) skipWhitespace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
-		l.readChar()
+	maybeVal := l.NextLexeme()
+	v, err := l.ReadAtomLiteral(maybeVal)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse value %s: %v", maybeVal.Literal, err)
 	}
-}
-
-func isWhitespace(ch byte) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
-}
-
-func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
-}
-
-func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z'
-}
-
-func isAlpha(ch byte) bool {
-	return isLetter(ch) || ch == '-' || ch == '?' || ch == '!'
+	lst := types.NewList(k, v)
+	return lst, nil
 }

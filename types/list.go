@@ -39,6 +39,10 @@ func (l *List) Append(a ...Any) {
 	return
 }
 
+func (l *List) IsEmpty() bool {
+	return len(l.vals) == 0
+}
+
 type iterableList struct {
 	*List
 
