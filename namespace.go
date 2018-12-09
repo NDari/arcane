@@ -21,7 +21,7 @@ func NewNS(name types.Key, upper *Namespace) *Namespace {
 
 func TopLevel() *Namespace {
 	topNameSpace := types.Key{
-		"arcane",
+		Val: "arcane",
 	}
 
 	ns := NewNS(topNameSpace, nil)

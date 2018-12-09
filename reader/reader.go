@@ -20,8 +20,8 @@ func NewReader(input string) *Reader {
 	}
 }
 
-func (l *Reader) ReadAll() ([]types.Any, error) {
-	var forms []types.Any
+func (l *Reader) ReadAll() (*types.List, error) {
+	forms := types.NewList()
 	for {
 		form, err := l.ReadAny()
 		if err != nil {
@@ -31,7 +31,7 @@ func (l *Reader) ReadAll() ([]types.Any, error) {
 			return forms, nil
 		}
 
-		forms = append(forms, form)
+		forms.Append(form)
 	}
 }
 

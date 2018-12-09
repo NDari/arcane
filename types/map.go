@@ -59,7 +59,7 @@ type iterableMap struct {
 }
 
 func (i *iterableMap) HasNext() bool {
-	return int(i.currentIndex.Val) >= len(i.vals)
+	return int(i.currentIndex.Val) < len(i.vals)
 }
 
 func (i *iterableMap) Next() Any {

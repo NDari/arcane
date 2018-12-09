@@ -50,7 +50,7 @@ type iterableList struct {
 }
 
 func (i *iterableList) HasNext() bool {
-	return int(i.currentIndex.Val) >= len(i.vals)
+	return int(i.currentIndex.Val) < len(i.vals)
 }
 
 func (i *iterableList) Next() Any {

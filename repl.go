@@ -26,8 +26,14 @@ func main() {
 			continue
 		}
 		fmt.Printf("$%d = ", counter)
-		for i := range anys {
-			fmt.Print(anys[i].Repr() + " ")
+		iter := anys.ToIterable()
+		for {
+			if iter.HasNext() {
+				item := iter.Next()
+				fmt.Print(item.Repr() + " ")
+			} else {
+				break
+			}
 		}
 		fmt.Println()
 		counter++
