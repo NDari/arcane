@@ -13,7 +13,7 @@ func NewMap() *Map {
 }
 
 func (m *Map) Repr() string {
-	if len(m.vals) == 0 {
+	if m.IsEmpty() {
 		return "{}"
 	}
 	s := fmt.Sprintf("{%s %s", m.vals[0].vals[0].Repr(), m.vals[0].vals[1].Repr())
@@ -34,6 +34,10 @@ func (m *Map) Get(k Key) Any {
 }
 
 func (m *Map) Set(l *List) {
+	if l.IsEmpty() {
+		return
+	}
+
 	for i := range m.vals {
 		if m.vals[i].vals[0] == l.vals[0] {
 			m.vals[i].vals[1] = l.vals[1]

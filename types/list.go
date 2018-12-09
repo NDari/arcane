@@ -9,7 +9,7 @@ type List struct {
 }
 
 func (l *List) Repr() string {
-	if len(l.vals) == 0 {
+	if l.IsEmpty() {
 		return "[]"
 	}
 	s := fmt.Sprintf("[%s", l.vals[0].Repr())

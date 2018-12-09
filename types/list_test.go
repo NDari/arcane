@@ -8,7 +8,7 @@ import (
 
 func TestNewList(t *testing.T) {
 	e := NewList()
-	assert.Equal(t, e, empty(), "new list should be empty")
+	assert.Equal(t, 0, len(e.vals), "new list should be empty")
 
 	a := Str{"Hello"}
 	b := Str{"goodbye"}
@@ -31,5 +31,13 @@ func TestAppend(t *testing.T) {
 	l3 := NewList(l, l2)
 	assert.Equal(t, l3.vals[0], l, "wrong head")
 	assert.Equal(t, l3.vals[1], l2, "wrong tail")
-	t.Errorf("%v", l3.vals)
+}
+
+func TestIsEmpty(t *testing.T) {
+	e := NewList()
+	assert.True(t, e.IsEmpty(), "new list should be empty")
+
+	a := Str{"Item"}
+	e.Append(a)
+	assert.True(t, !e.IsEmpty(), "list should not be empty")
 }
