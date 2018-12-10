@@ -13,7 +13,7 @@ func main() {
 	rd := bufio.NewReader(os.Stdin)
 	counter := 1
 	for {
-		fmt.Print("arcane:: ")
+		fmt.Print(">> ")
 		str, _ := rd.ReadString('\n')
 		if strings.TrimSpace(str) == ":q" {
 			fmt.Println("Goodbye!")
