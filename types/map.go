@@ -24,9 +24,9 @@ func (m *Map) Repr() string {
 	return s
 }
 
-func (m *Map) Get(k Key) Any {
+func (m *Map) Get(s Sym) Any {
 	for i := range m.vals {
-		if m.vals[i].vals[0] == k {
+		if m.vals[i].vals[0] == s {
 			return m.vals[i].vals[1]
 		}
 	}

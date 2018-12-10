@@ -40,13 +40,13 @@ func (l *Reader) ReadAny() (types.Any, error) {
 	switch form.Type {
 	case EOF:
 		return nil, nil
-	case IDENT, STR, KEY, I64, F64:
+	case IDENT, STR, SYM, I64, F64:
 		s, err := l.ReadAtomLiteral(form)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read atom:\n%v", err)
 		}
 		return s, nil
-	case LBRACK:
+	case LPAREN:
 		s, err := l.ReadListLiteral()
 		if err != nil {
 			return nil, fmt.Errorf("failed to read list:\n%v", err)
@@ -65,8 +65,10 @@ func (l *Reader) ReadAny() (types.Any, error) {
 
 func (l *Reader) ReadAtomLiteral(form *Lexeme) (types.Any, error) {
 	switch form.Type {
-	case IDENT, KEY:
-		return types.Key{Val: form.Literal}, nil
+	case IDENT:
+		return types.Ident{Val: form.Literal}, nil
+	case SYM:
+		return types.Sym{Val: form.Literal}, nil
 	case STR:
 		return types.Str{Val: form.Literal}, nil
 	case I64:
@@ -87,15 +89,15 @@ func (l *Reader) ReadAtomLiteral(form *Lexeme) (types.Any, error) {
 
 func (l *Reader) ReadListLiteral() (*types.List, error) {
 	lst := types.NewList()
-	for form := l.NextLexeme(); form.Type != RBRACK; form = l.NextLexeme() {
+	for form := l.NextLexeme(); form.Type != RPAREN; form = l.NextLexeme() {
 		switch form.Type {
-		case IDENT, STR, KEY, I64, F64:
+		case IDENT, STR, SYM, I64, F64:
 			s, err := l.ReadAtomLiteral(form)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read atom:\n%v", err)
 			}
 			lst.Append(s)
-		case LBRACK:
+		case LPAREN:
 			s, err := l.ReadListLiteral()
 			if err != nil {
 				return nil, fmt.Errorf("failed to read list:\n%v", err)
@@ -131,26 +133,26 @@ func (l *Reader) ReadHashLiteral() (*types.Map, error) {
 }
 
 func (l *Reader) ReadKvPair() (*types.List, error) {
-	maybeKey := l.NextLexeme()
-	if maybeKey.Type == RBRACE {
+	maybeSym := l.NextLexeme()
+	if maybeSym.Type == RBRACE {
 		return types.NewList(), nil
 	}
-	if maybeKey.Type != KEY {
-		return nil, fmt.Errorf("When parsing hash literal, expected Key, found %s: %s", maybeKey.String(), maybeKey.Literal)
+	if maybeSym.Type != SYM {
+		return nil, fmt.Errorf("When parsing hash literal, expected Sym, found %s: %s", maybeSym.String(), maybeSym.Literal)
 	}
-	atm, err := l.ReadAtomLiteral(maybeKey)
+	atm, err := l.ReadAtomLiteral(maybeSym)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse key %s: %v", maybeKey.Literal, err)
+		return nil, fmt.Errorf("could not parse sym %s: %v", maybeSym.Literal, err)
 	}
 
-	k, ok := atm.(types.Key)
+	k, ok := atm.(types.Sym)
 	if !ok {
-		return nil, fmt.Errorf("could not convert %v to key", atm)
+		return nil, fmt.Errorf("could not convert %v to sym", atm)
 	}
 
 	v, err := l.ReadAny()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read value associated with key %v: %v", k.Repr(), err)
+		return nil, fmt.Errorf("failed to read value associated with sym %v: %v", k.Repr(), err)
 	}
 	lst := types.NewList(k, v)
 	return lst, nil

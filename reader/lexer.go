@@ -16,7 +16,7 @@ const (
 	I64   // 12345
 	F64   // 1.3
 	STR   // "abc"
-	KEY   // :thing
+	SYM   // :thing
 	FN    // #{  }
 	litTokenEnd
 
@@ -35,7 +35,7 @@ var tokenNames = [...]string{
 	I64:    "I64", // 12345
 	F64:    "F64", // 1.3
 	STR:    "STR", // "abc"
-	KEY:    "KEY", // :thing
+	SYM:    "SYM", // :thing
 	LPAREN: "LPAREN",
 	RPAREN: "RPAREN",
 	LBRACK: "LBRACK",
@@ -159,7 +159,7 @@ func (l *Lexer) lexKey() *Lexeme {
 	}
 
 	return &Lexeme{
-		Type:    KEY,
+		Type:    SYM,
 		Literal: l.input[pos:l.position],
 	}
 }

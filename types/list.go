@@ -10,13 +10,13 @@ type List struct {
 
 func (l *List) Repr() string {
 	if l.IsEmpty() {
-		return "[]"
+		return "()"
 	}
-	s := fmt.Sprintf("[%s", l.vals[0].Repr())
+	s := fmt.Sprintf("(%s", l.vals[0].Repr())
 	for i := 1; i < len(l.vals); i++ {
 		s += fmt.Sprintf(", %s", l.vals[i].Repr())
 	}
-	s += "]"
+	s += ")"
 	return s
 }
 

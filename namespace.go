@@ -6,11 +6,11 @@ import (
 
 type Namespace struct {
 	upper *Namespace
-	name  types.Key
+	name  types.Sym
 	vals  *types.Map
 }
 
-func NewNS(name types.Key, upper *Namespace) *Namespace {
+func NewNS(name types.Sym, upper *Namespace) *Namespace {
 	m := types.NewMap()
 	return &Namespace{
 		upper,
@@ -20,7 +20,7 @@ func NewNS(name types.Key, upper *Namespace) *Namespace {
 }
 
 func TopLevel() *Namespace {
-	topNameSpace := types.Key{
+	topNameSpace := types.Sym{
 		Val: "arcane",
 	}
 
