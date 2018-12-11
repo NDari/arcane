@@ -25,7 +25,7 @@ func (l *Reader) ReadAll() (*types.List, error) {
 	for {
 		form, err := l.ReadAny()
 		if err != nil {
-			return nil, fmt.Errorf("failed to ReadAll: %v", err)
+			return nil, fmt.Errorf("failed to ReadAll:\n%v", err)
 		}
 		if form == nil {
 			return forms, nil
@@ -121,7 +121,7 @@ func (l *Reader) ReadHashLiteral() (*types.Map, error) {
 	for {
 		pair, err := l.ReadKvPair()
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse hash literal: %v", err)
+			return nil, fmt.Errorf("failed to parse hash literal:\n%v", err)
 		}
 		if pair.IsEmpty() {
 			break
@@ -142,7 +142,7 @@ func (l *Reader) ReadKvPair() (*types.List, error) {
 	}
 	atm, err := l.ReadAtomLiteral(maybeSym)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse sym %s: %v", maybeSym.Literal, err)
+		return nil, fmt.Errorf("could not parse sym %s:\n%v", maybeSym.Literal, err)
 	}
 
 	k, ok := atm.(types.Sym)
@@ -152,7 +152,7 @@ func (l *Reader) ReadKvPair() (*types.List, error) {
 
 	v, err := l.ReadAny()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read value associated with sym %v: %v", k.Repr(), err)
+		return nil, fmt.Errorf("failed to read value associated with sym %v:\n%v", k.Repr(), err)
 	}
 	lst := types.NewList(k, v)
 	return lst, nil

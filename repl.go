@@ -22,7 +22,7 @@ func main() {
 		r := reader.NewReader(str)
 		anys, err := r.ReadAll()
 		if err != nil {
-			fmt.Println("reader failed:", err)
+			fmt.Println("read failed:\n", err)
 			continue
 		}
 		fmt.Printf("$%d = ", counter)

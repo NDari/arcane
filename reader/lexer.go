@@ -51,7 +51,10 @@ type Lexeme struct {
 
 func (l *Lexeme) String() string {
 	tname := tokenNames[l.Type]
-	return fmt.Sprintf("%s:\t\t%s", tname, l.Literal)
+	if tname == "" {
+		tname = "IDENT"
+	}
+	return fmt.Sprintf("%s", tname)
 }
 
 type Lexer struct {
