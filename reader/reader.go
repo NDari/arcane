@@ -119,41 +119,32 @@ func (l *Reader) ReadListLiteral() (*types.List, error) {
 func (l *Reader) ReadHashLiteral() (*types.Map, error) {
 	m := types.NewMap()
 	for {
-		pair, err := l.ReadKvPair()
+		k, v, err := l.ReadKvPair()
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse hash literal:\n%v", err)
 		}
-		if pair.IsEmpty() {
+		if k == "" || v == nil {
 			break
 		}
 
-		m.Set(pair)
+		m.Set(k, v)
 	}
 	return m, nil
 }
 
-func (l *Reader) ReadKvPair() (*types.List, error) {
+func (l *Reader) ReadKvPair() (string, types.Any, error) {
 	maybeSym := l.NextLexeme()
 	if maybeSym.Type == RBRACE {
-		return types.NewList(), nil
+		return "", nil, nil
 	}
-	if maybeSym.Type != SYM {
-		return nil, fmt.Errorf("When parsing hash literal, expected Sym, found %s: %s", maybeSym.String(), maybeSym.Literal)
+	if maybeSym.Type != IDENT {
+		return "", nil, fmt.Errorf("When parsing hash literal, expected IDENT, found %s: %s", maybeSym.String(), maybeSym.Literal)
 	}
-	atm, err := l.ReadAtomLiteral(maybeSym)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse sym %s:\n%v", maybeSym.Literal, err)
-	}
-
-	k, ok := atm.(types.Sym)
-	if !ok {
-		return nil, fmt.Errorf("could not convert %v to sym", atm)
-	}
+	k := maybeSym.Literal
 
 	v, err := l.ReadAny()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read value associated with sym %v:\n%v", k.Repr(), err)
+		return "", nil, fmt.Errorf("failed to read value associated with key %s:\n%v", k, err)
 	}
-	lst := types.NewList(k, v)
-	return lst, nil
+	return k, v, nil
 }

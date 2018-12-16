@@ -3,12 +3,12 @@ package types
 import "fmt"
 
 type Map struct {
-	vals []*List
+	vals map[string]Any
 }
 
 func NewMap() *Map {
 	return &Map{
-		make([]*List, 0),
+		make(map[string]Any),
 	}
 }
 
@@ -16,35 +16,30 @@ func (m *Map) Repr() string {
 	if m.IsEmpty() {
 		return "{}"
 	}
-	s := fmt.Sprintf("{%s %s", m.vals[0].vals[0].Repr(), m.vals[0].vals[1].Repr())
-	for i := 1; i < len(m.vals); i++ {
-		s += fmt.Sprintf(", %s %s", m.vals[i].vals[0].Repr(), m.vals[i].vals[1].Repr())
+	s := "{"
+	first := true
+	for k, v := range m.vals {
+		if first {
+			s += fmt.Sprintf("%s: %s", k, v.Repr())
+			first = false
+		} else {
+			s += fmt.Sprintf(", %s: %s", k, v.Repr())
+		}
 	}
 	s += "}"
 	return s
 }
 
-func (m *Map) Get(s Sym) Any {
-	for i := range m.vals {
-		if m.vals[i].vals[0] == s {
-			return m.vals[i].vals[1]
-		}
+func (m *Map) Get(s string) Any {
+	v, ok := m.vals[s]
+	if ok {
+		return v
 	}
 	return nil
 }
 
-func (m *Map) Set(l *List) {
-	if l.IsEmpty() {
-		return
-	}
-
-	for i := range m.vals {
-		if m.vals[i].vals[0] == l.vals[0] {
-			m.vals[i].vals[1] = l.vals[1]
-			return
-		}
-	}
-	m.vals = append(m.vals, l)
+func (m *Map) Set(k string, v Any) {
+	m.vals[k] = v
 	return
 }
 
@@ -52,24 +47,24 @@ func (m *Map) IsEmpty() bool {
 	return len(m.vals) == 0
 }
 
-type iterableMap struct {
-	*Map
+// type iterableMap struct {
+// 	*Map
 
-	currentIndex I64
-}
+// 	currentIndex I64
+// }
 
-func (i *iterableMap) HasNext() bool {
-	return int(i.currentIndex.Val) < len(i.vals)
-}
+// func (i *iterableMap) HasNext() bool {
+// 	return int(i.currentIndex.Val) < len(i.vals)
+// }
 
-func (i *iterableMap) Next() Any {
-	i.currentIndex.Val++
-	return i.vals[i.currentIndex.Val-1]
-}
+// func (i *iterableMap) Next() Any {
+// 	i.currentIndex.Val++
+// 	return i.vals[i.currentIndex.Val-1]
+// }
 
-func (m *Map) ToIterable() Iterator {
-	return &iterableMap{
-		m,
-		I64{0},
-	}
-}
+// func (m *Map) ToIterable() Iterator {
+// 	return &iterableMap{
+// 		m,
+// 		I64{0},
+// 	}
+// }
