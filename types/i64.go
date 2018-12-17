@@ -4,10 +4,8 @@ import (
 	"fmt"
 )
 
-type I64 struct {
-	Val int64
-}
+type I64 int
 
 func (i I64) Repr() string {
-	return fmt.Sprintf("%d", i.Val)
+	return fmt.Sprintf("%d", i)
 }

@@ -4,10 +4,8 @@ import (
 	"fmt"
 )
 
-type Str struct {
-	Val string
-}
+type Str string
 
 func (s Str) Repr() string {
-	return fmt.Sprintf("%s", s.Val)
+	return fmt.Sprintf("%s", s)
 }
