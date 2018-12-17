@@ -46,7 +46,7 @@ func (l *Reader) ReadAny() (types.Any, error) {
 			return nil, fmt.Errorf("failed to read atom:\n%v", err)
 		}
 		return s, nil
-	case LPAREN:
+	case LBRACK:
 		s, err := l.ReadListLiteral()
 		if err != nil {
 			return nil, fmt.Errorf("failed to read list:\n%v", err)
@@ -54,6 +54,12 @@ func (l *Reader) ReadAny() (types.Any, error) {
 		return s, nil
 	case LBRACE:
 		s, err := l.ReadHashLiteral()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read hash:\n%v", err)
+		}
+		return s, nil
+	case LPAREN:
+		s, err := l.ReadExpr()
 		if err != nil {
 			return nil, fmt.Errorf("failed to read hash:\n%v", err)
 		}
@@ -89,7 +95,7 @@ func (l *Reader) ReadAtomLiteral(form *Lexeme) (types.Any, error) {
 
 func (l *Reader) ReadListLiteral() (*types.List, error) {
 	lst := types.NewList()
-	for form := l.NextLexeme(); form.Type != RPAREN; form = l.NextLexeme() {
+	for form := l.NextLexeme(); form.Type != RBRACK; form = l.NextLexeme() {
 		switch form.Type {
 		case IDENT, STR, SYM, I64, F64:
 			s, err := l.ReadAtomLiteral(form)
@@ -97,7 +103,7 @@ func (l *Reader) ReadListLiteral() (*types.List, error) {
 				return nil, fmt.Errorf("failed to read atom:\n%v", err)
 			}
 			lst.Append(s)
-		case LPAREN:
+		case LBRACK:
 			s, err := l.ReadListLiteral()
 			if err != nil {
 				return nil, fmt.Errorf("failed to read list:\n%v", err)
@@ -109,6 +115,12 @@ func (l *Reader) ReadListLiteral() (*types.List, error) {
 				return nil, fmt.Errorf("failed to read hash:\n%v", err)
 			}
 			lst.Append(s)
+		case LPAREN:
+			e, err := l.ReadExpr()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read expr:\n%v", err)
+			}
+			lst.Append(e)
 		default:
 			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
 		}
@@ -147,4 +159,50 @@ func (l *Reader) ReadKvPair() (string, types.Any, error) {
 		return "", nil, fmt.Errorf("failed to read value associated with key %s:\n%v", k, err)
 	}
 	return k, v, nil
+}
+
+func (l *Reader) ReadExpr() (*types.Map, error) {
+	m := types.NewMap()
+	funcName := l.NextLexeme()
+	if funcName.Type != IDENT {
+		return nil, fmt.Errorf("Expected IDENT at the start of an expression, but got %s with value: %s", funcName.String(), funcName.Literal)
+	}
+	f, err := l.ReadAtomLiteral(funcName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read function name in expression:\n%v", err)
+	}
+	m.Set("$fn", f)
+	lst := types.NewList()
+	for form := l.NextLexeme(); form.Type != RPAREN; form = l.NextLexeme() {
+		switch form.Type {
+		case IDENT, STR, SYM, I64, F64:
+			s, err := l.ReadAtomLiteral(form)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read atom:\n%v", err)
+			}
+			lst.Append(s)
+		case LBRACK:
+			s, err := l.ReadListLiteral()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read list:\n%v", err)
+			}
+			lst.Append(s)
+		case LBRACE:
+			s, err := l.ReadHashLiteral()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read hash:\n%v", err)
+			}
+			lst.Append(s)
+		case LPAREN:
+			e, err := l.ReadExpr()
+			if err != nil {
+				return nil, fmt.Errorf("failed to read expr:\n%v", err)
+			}
+			lst.Append(e)
+		default:
+			return nil, fmt.Errorf("could not read \"%s\"", form.Literal)
+		}
+	}
+	m.Set("$exprs", lst)
+	return m, nil
 }

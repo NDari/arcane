@@ -26,7 +26,6 @@ func main() {
 			continue
 		}
 		fmt.Printf("$%d = ", counter)
-		fmt.Println(anys)
 		iter := anys.ToIterable()
 		for {
 			if iter.HasNext() {

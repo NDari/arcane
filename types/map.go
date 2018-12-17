@@ -47,24 +47,31 @@ func (m *Map) IsEmpty() bool {
 	return len(m.vals) == 0
 }
 
-// type iterableMap struct {
-// 	*Map
+type iterableMap struct {
+	self         *Map
+	keyMap       map[int]string
+	currentIndex int
+}
 
-// 	currentIndex I64
-// }
+func (i *iterableMap) HasNext() bool {
+	return i.currentIndex > 0
+}
 
-// func (i *iterableMap) HasNext() bool {
-// 	return int(i.currentIndex.Val) < len(i.vals)
-// }
+func (i *iterableMap) Next() Any {
+	i.currentIndex--
+	return i.self.vals[i.keyMap[i.currentIndex]]
+}
 
-// func (i *iterableMap) Next() Any {
-// 	i.currentIndex.Val++
-// 	return i.vals[i.currentIndex.Val-1]
-// }
-
-// func (m *Map) ToIterable() Iterator {
-// 	return &iterableMap{
-// 		m,
-// 		I64{0},
-// 	}
-// }
+func (m *Map) ToIterable() Iterator {
+	keyMap := make(map[int]string)
+	idx := 0
+	for k, _ := range m.vals {
+		keyMap[idx] = k
+		idx++
+	}
+	return &iterableMap{
+		m,
+		keyMap,
+		len(keyMap),
+	}
+}
