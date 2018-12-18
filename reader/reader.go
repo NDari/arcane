@@ -25,7 +25,7 @@ func (l *Reader) ReadAll() (*types.List, error) {
 	for {
 		form, err := l.ReadAny()
 		if err != nil {
-			return nil, fmt.Errorf("failed to ReadAll:\n%v", err)
+			return nil, err
 		}
 		if form == nil {
 			return forms, nil
@@ -61,7 +61,7 @@ func (l *Reader) ReadAny() (types.Any, error) {
 	case LPAREN:
 		s, err := l.ReadExpr()
 		if err != nil {
-			return nil, fmt.Errorf("failed to read hash:\n%v", err)
+			return nil, fmt.Errorf("failed to read expr:\n%v", err)
 		}
 		return s, nil
 	default:
@@ -72,23 +72,23 @@ func (l *Reader) ReadAny() (types.Any, error) {
 func (l *Reader) ReadAtomLiteral(form *Lexeme) (types.Any, error) {
 	switch form.Type {
 	case IDENT:
-		return types.Ident{Val: form.Literal}, nil
+		return types.Ident(form.Literal), nil
 	case SYM:
-		return types.Sym{Val: form.Literal}, nil
+		return types.Sym(form.Literal), nil
 	case STR:
-		return types.Str{Val: form.Literal}, nil
+		return types.Str(form.Literal), nil
 	case I64:
 		v, err := strconv.Atoi(form.Literal)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse I64 from %s:\n%v", form.Literal, err)
 		}
-		return types.I64{Val: int64(v)}, nil
+		return types.I64(v), nil
 	case F64:
 		v, err := strconv.ParseFloat(form.Literal, 64)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse F64 from %s:\n%v", form.Literal, err)
 		}
-		return types.F64{Val: v}, nil
+		return types.F64(v), nil
 	}
 	return nil, fmt.Errorf("unknown atom: %s", form.Literal)
 }
@@ -133,7 +133,7 @@ func (l *Reader) ReadHashLiteral() (*types.Map, error) {
 	for {
 		k, v, err := l.ReadKvPair()
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse hash literal:\n%v", err)
+			return nil, fmt.Errorf("failed to read hash literal:\n%v", err)
 		}
 		if k == "" || v == nil {
 			break
@@ -150,7 +150,7 @@ func (l *Reader) ReadKvPair() (string, types.Any, error) {
 		return "", nil, nil
 	}
 	if maybeSym.Type != IDENT {
-		return "", nil, fmt.Errorf("When parsing hash literal, expected IDENT, found %s: %s", maybeSym.String(), maybeSym.Literal)
+		return "", nil, fmt.Errorf("When reading hash literal, expected IDENT, found %s: %s", maybeSym.String(), maybeSym.Literal)
 	}
 	k := maybeSym.Literal
 

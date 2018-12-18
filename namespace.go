@@ -20,9 +20,7 @@ func NewNS(name types.Sym, upper *Namespace) *Namespace {
 }
 
 func TopLevel() *Namespace {
-	topNameSpace := types.Sym{
-		Val: "arcane",
-	}
+	topNameSpace := types.Sym("arcane")
 
 	ns := NewNS(topNameSpace, nil)
 	return ns

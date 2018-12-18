@@ -31,6 +31,9 @@ func (m *Map) Repr() string {
 }
 
 func (m *Map) Get(s string) Any {
+	if m.IsEmpty() {
+		return nil
+	}
 	v, ok := m.vals[s]
 	if ok {
 		return v

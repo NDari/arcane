@@ -38,6 +38,17 @@ func NewList(args ...Any) *List {
 	}
 }
 
+func (l *List) Get(idx int) Any {
+	if l.IsEmpty() || (idx >= 0 && idx > len(l.vals)-1) || (idx < 0 && -idx > len(l.vals)) {
+		return nil
+	}
+	if idx >= 0 {
+		return l.vals[idx]
+	} else {
+		return l.vals[len(l.vals)+idx]
+	}
+}
+
 func (l *List) Append(a ...Any) {
 	if len(a) == 0 {
 		return
