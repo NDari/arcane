@@ -3,6 +3,7 @@ package reader
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/NDari/arcane/types"
 )
@@ -205,4 +206,16 @@ func (l *Reader) ReadExpr() (*types.Map, error) {
 	}
 	m.Set("$exprs", lst)
 	return m, nil
+}
+
+func ValidExprString(sexp string) bool {
+	lp := strings.Count(sexp, "(")
+	if lp == 0 {
+		return false
+	}
+	rp := strings.Count(sexp, ")")
+	if rp == lp {
+		return true
+	}
+	return false
 }

@@ -5,23 +5,15 @@ import (
 )
 
 type Namespace struct {
+	*types.Map
 	upper *Namespace
 	name  types.Sym
-	vals  *types.Map
 }
 
 func NewNS(name types.Sym, upper *Namespace) *Namespace {
-	m := types.NewMap()
-	return &Namespace{
-		upper,
-		name,
-		m,
-	}
+	return &Namespace{types.NewMap(), upper, name}
 }
 
-func TopLevel() *Namespace {
-	topNameSpace := types.Sym("arcane")
-
-	ns := NewNS(topNameSpace, nil)
-	return ns
+func BaseNS() *Namespace {
+	return NewNS(types.Sym("Base"), nil)
 }
