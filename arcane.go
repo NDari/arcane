@@ -20,7 +20,7 @@ func main() {
 				line = strings.TrimLeft(line, " ")
 				if !strings.HasPrefix(line, "(") {
 					fmt.Println("expression must start with '('")
-					break
+					continue
 				}
 				lines += line
 			} else {
@@ -34,7 +34,8 @@ func main() {
 		r := reader.NewReader(lines)
 		anys, err := r.ReadAll()
 		if err != nil {
-			fmt.Println(err, "\n")
+			fmt.Println(err)
+			fmt.Println()
 			continue
 		}
 		fmt.Printf("$%d = ", counter)
